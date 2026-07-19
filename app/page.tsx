@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { CLUBS, CONDITIONS, conditionBadgeBg, conditionColor } from "@/lib/clubs";
 import { NEW_CLUBS } from "@/lib/newClubs";
+import { ALL_BRANDS } from "@/lib/brands";
 import type { AIResult, Club, NewClub } from "@/lib/types";
 import { ClubCard } from "@/components/ClubCard";
 import { NewClubCard } from "@/components/NewClubCard";
@@ -54,8 +55,8 @@ export default function App() {
   const [inputMode, setInputMode] = useState<InputMode>("text");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const usedBrands = Array.from(new Set(allClubs.map((c) => c.brand))).sort();
-  const newBrands = Array.from(new Set(NEW_CLUBS.map((c) => c.brand))).sort();
+  const usedBrands = ALL_BRANDS;
+  const newBrands = ALL_BRANDS;
 
   const filtered = allClubs
     .filter((c) => filter === "All" || c.type === filter)

@@ -1,0 +1,31 @@
+// Full list of major golf club brands shown in the Buy filters, independent
+// of which brands currently have listings — selecting one with no matches
+// just shows the "no clubs match" empty state.
+export const ALL_BRANDS = [
+  "Adams Golf",
+  "Ben Hogan",
+  "Bettinardi",
+  "Bridgestone",
+  "Callaway",
+  "Cleveland",
+  "Cobra",
+  "Founders Club",
+  "Honma",
+  "KZG",
+  "Krank",
+  "LA Golf",
+  "Mizuno",
+  "Miura",
+  "Odyssey",
+  "Ping",
+  "PXG",
+  "Scotty Cameron",
+  "Srixon",
+  "Sub 70",
+  "TaylorMade",
+  "Titleist",
+  "Tour Edge",
+  "Wilson",
+  "XXIO",
+  "Yonex",
+].sort();
