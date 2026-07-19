@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { CLUBS, conditionBadgeBg, conditionColor } from "@/lib/clubs";
+import { CLUBS, CONDITIONS, conditionBadgeBg, conditionColor } from "@/lib/clubs";
 import { NEW_CLUBS } from "@/lib/newClubs";
 import type { AIResult, Club, NewClub } from "@/lib/types";
 import { ClubCard } from "@/components/ClubCard";
@@ -11,12 +11,19 @@ import { PhotoGallery } from "@/components/PhotoGallery";
 import { AIResultBody } from "@/components/AIResultBody";
 import { StarRating, SpecRow } from "@/components/Shared";
 import { SellView } from "@/components/SellView";
+import { FilterBar } from "@/components/FilterBar";
 
 type View = "listing" | "detail" | "newDetail" | "sell";
 type BuyTab = "used" | "new";
 type InputMode = "text" | "photo";
 
 const TYPES = ["All", "Driver", "Iron Set", "Wedge", "Fairway Wood", "Hybrid", "Putter"];
+
+const SORT_OPTIONS = [
+  { value: "featured", label: "Featured" },
+  { value: "price-asc", label: "Price: Low to High" },
+  { value: "price-desc", label: "Price: High to Low" },
+];
 
 export default function App() {
   const [allClubs, setAllClubs] = useState<Club[]>(CLUBS);
@@ -25,6 +32,16 @@ export default function App() {
   const [aiResult, setAiResult] = useState<AIResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("All");
+  const [usedBrand, setUsedBrand] = useState("All");
+  const [usedCondition, setUsedCondition] = useState("All");
+  const [usedMinPrice, setUsedMinPrice] = useState("");
+  const [usedMaxPrice, setUsedMaxPrice] = useState("");
+  const [usedSort, setUsedSort] = useState("featured");
+  const [newFilter, setNewFilter] = useState("All");
+  const [newBrand, setNewBrand] = useState("All");
+  const [newMinPrice, setNewMinPrice] = useState("");
+  const [newMaxPrice, setNewMaxPrice] = useState("");
+  const [newSort, setNewSort] = useState("featured");
   const [view, setView] = useState<View>("listing");
   const [buyTab, setBuyTab] = useState<BuyTab>("used");
   const [selectedNewClub, setSelectedNewClub] = useState<NewClub | null>(null);
@@ -37,7 +54,59 @@ export default function App() {
   const [inputMode, setInputMode] = useState<InputMode>("text");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const filtered = filter === "All" ? allClubs : allClubs.filter((c) => c.type === filter);
+  const usedBrands = Array.from(new Set(allClubs.map((c) => c.brand))).sort();
+  const newBrands = Array.from(new Set(NEW_CLUBS.map((c) => c.brand))).sort();
+
+  const filtered = allClubs
+    .filter((c) => filter === "All" || c.type === filter)
+    .filter((c) => usedBrand === "All" || c.brand === usedBrand)
+    .filter((c) => usedCondition === "All" || c.condition === usedCondition)
+    .filter((c) => !usedMinPrice || c.price >= Number(usedMinPrice))
+    .filter((c) => !usedMaxPrice || c.price <= Number(usedMaxPrice))
+    .sort((a, b) => {
+      if (usedSort === "price-asc") return a.price - b.price;
+      if (usedSort === "price-desc") return b.price - a.price;
+      return 0;
+    });
+
+  const hasUsedFilters =
+    filter !== "All" ||
+    usedBrand !== "All" ||
+    usedCondition !== "All" ||
+    usedMinPrice !== "" ||
+    usedMaxPrice !== "" ||
+    usedSort !== "featured";
+
+  const resetUsedFilters = () => {
+    setFilter("All");
+    setUsedBrand("All");
+    setUsedCondition("All");
+    setUsedMinPrice("");
+    setUsedMaxPrice("");
+    setUsedSort("featured");
+  };
+
+  const filteredNewClubs = NEW_CLUBS
+    .filter((c) => newFilter === "All" || c.type === newFilter)
+    .filter((c) => newBrand === "All" || c.brand === newBrand)
+    .filter((c) => !newMinPrice || c.msrp >= Number(newMinPrice))
+    .filter((c) => !newMaxPrice || c.msrp <= Number(newMaxPrice))
+    .sort((a, b) => {
+      if (newSort === "price-asc") return a.msrp - b.msrp;
+      if (newSort === "price-desc") return b.msrp - a.msrp;
+      return 0;
+    });
+
+  const hasNewFilters =
+    newFilter !== "All" || newBrand !== "All" || newMinPrice !== "" || newMaxPrice !== "" || newSort !== "featured";
+
+  const resetNewFilters = () => {
+    setNewFilter("All");
+    setNewBrand("All");
+    setNewMinPrice("");
+    setNewMaxPrice("");
+    setNewSort("featured");
+  };
 
   const handleSelectClub = (club: Club) => {
     setSelectedClub(club);
@@ -254,7 +323,8 @@ export default function App() {
             onListingCreated={(newListing) => {
               setAllClubs((prev) => [newListing, ...prev]);
               setView("listing");
-              setFilter("All");
+              setBuyTab("used");
+              resetUsedFilters();
             }}
           />
         )}
@@ -342,27 +412,92 @@ export default function App() {
                     </button>
                   ))}
                 </div>
+                <FilterBar
+                  brands={usedBrands}
+                  brand={usedBrand}
+                  onBrandChange={setUsedBrand}
+                  conditions={CONDITIONS}
+                  condition={usedCondition}
+                  onConditionChange={setUsedCondition}
+                  minPrice={usedMinPrice}
+                  onMinPriceChange={setUsedMinPrice}
+                  maxPrice={usedMaxPrice}
+                  onMaxPriceChange={setUsedMaxPrice}
+                  sort={usedSort}
+                  onSortChange={setUsedSort}
+                  sortOptions={SORT_OPTIONS}
+                  onReset={resetUsedFilters}
+                  hasActiveFilters={hasUsedFilters}
+                />
                 <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 16, fontWeight: 500 }}>
-                  {filtered.length} used clubs available{filter !== "All" ? ` in ${filter}` : ""}
+                  {filtered.length} used club{filtered.length === 1 ? "" : "s"} available
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
-                  {filtered.map((c) => (
-                    <ClubCard key={c.id} club={c} onSelect={handleSelectClub} />
-                  ))}
-                </div>
+                {filtered.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "48px 0", color: "#9ca3af" }}>
+                    <div style={{ fontSize: 32, marginBottom: 10 }}>🔍</div>
+                    <p style={{ fontSize: 14, margin: 0 }}>No clubs match these filters. Try widening your search.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
+                    {filtered.map((c) => (
+                      <ClubCard key={c.id} club={c} onSelect={handleSelectClub} />
+                    ))}
+                  </div>
+                )}
               </>
             )}
 
             {buyTab === "new" && (
               <>
-                <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 16, fontWeight: 500 }}>
-                  {NEW_CLUBS.length} new clubs · compare prices across retailers
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
-                  {NEW_CLUBS.map((c) => (
-                    <NewClubCard key={c.id} club={c} onSelect={handleSelectNewClub} />
+                <div style={{ display: "flex", gap: 8, marginBottom: 22, flexWrap: "wrap" }}>
+                  {TYPES.map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setNewFilter(t)}
+                      style={{
+                        background: newFilter === t ? "#16a34a" : "#fff",
+                        color: newFilter === t ? "#fff" : "#374151",
+                        border: newFilter === t ? "1.5px solid #16a34a" : "1.5px solid #e5e7eb",
+                        borderRadius: 20,
+                        padding: "7px 18px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {t}
+                    </button>
                   ))}
                 </div>
+                <FilterBar
+                  brands={newBrands}
+                  brand={newBrand}
+                  onBrandChange={setNewBrand}
+                  minPrice={newMinPrice}
+                  onMinPriceChange={setNewMinPrice}
+                  maxPrice={newMaxPrice}
+                  onMaxPriceChange={setNewMaxPrice}
+                  sort={newSort}
+                  onSortChange={setNewSort}
+                  sortOptions={SORT_OPTIONS}
+                  onReset={resetNewFilters}
+                  hasActiveFilters={hasNewFilters}
+                />
+                <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 16, fontWeight: 500 }}>
+                  {filteredNewClubs.length} new club{filteredNewClubs.length === 1 ? "" : "s"} · compare prices across retailers
+                </div>
+                {filteredNewClubs.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "48px 0", color: "#9ca3af" }}>
+                    <div style={{ fontSize: 32, marginBottom: 10 }}>🔍</div>
+                    <p style={{ fontSize: 14, margin: 0 }}>No clubs match these filters. Try widening your search.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
+                    {filteredNewClubs.map((c) => (
+                      <NewClubCard key={c.id} club={c} onSelect={handleSelectNewClub} />
+                    ))}
+                  </div>
+                )}
               </>
             )}
           </>
