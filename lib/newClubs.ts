@@ -1,5 +1,5 @@
 import type { NewClub, Retailer } from "./types";
-import { clubPhotoFor } from "./clubPhotos";
+import { clubIconFor } from "./clubIcons";
 
 export const RETAILERS: Retailer[] = [
   { name: "PGA Tour Superstore", domain: "pgatoursuperstore.com" },
@@ -28,7 +28,7 @@ export const NEW_CLUBS: NewClub[] = [
     loft: "9°",
     shaft: "Fujikura Ventus Red TR (Regular)",
     msrp: 599,
-    photos: [clubPhotoFor("Driver")],
+    photos: [clubIconFor("Driver")],
     specs: {
       headSize: "460cc",
       adjustable: true,
@@ -49,7 +49,7 @@ export const NEW_CLUBS: NewClub[] = [
     loft: "10.5°",
     shaft: "Project X Denali Black (Regular)",
     msrp: 629,
-    photos: [clubPhotoFor("Driver")],
+    photos: [clubIconFor("Driver")],
     specs: {
       headSize: "460cc",
       adjustable: true,
@@ -70,7 +70,7 @@ export const NEW_CLUBS: NewClub[] = [
     loft: "5–PW",
     shaft: "True Temper Dynamic Gold 105 (Stiff)",
     msrp: 1399,
-    photos: [clubPhotoFor("Iron Set")],
+    photos: [clubIconFor("Iron Set")],
     specs: {
       headSize: "N/A",
       adjustable: false,
@@ -91,7 +91,7 @@ export const NEW_CLUBS: NewClub[] = [
     loft: "10.5°",
     shaft: "Ping Alta CB Red (Regular)",
     msrp: 549,
-    photos: [clubPhotoFor("Driver")],
+    photos: [clubIconFor("Driver")],
     specs: {
       headSize: "460cc",
       adjustable: true,
@@ -112,7 +112,7 @@ export const NEW_CLUBS: NewClub[] = [
     loft: "56°",
     shaft: "True Temper Dynamic Gold (Wedge Flex)",
     msrp: 189,
-    photos: [clubPhotoFor("Wedge")],
+    photos: [clubIconFor("Wedge")],
     specs: {
       headSize: "N/A",
       adjustable: false,
@@ -133,7 +133,7 @@ export const NEW_CLUBS: NewClub[] = [
     loft: "3°",
     shaft: "Steel (35in)",
     msrp: 449,
-    photos: [clubPhotoFor("Putter")],
+    photos: [clubIconFor("Putter")],
     specs: {
       headSize: "Mallet",
       adjustable: false,

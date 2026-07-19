@@ -1,5 +1,5 @@
 import type { Club, Condition } from "./types";
-import { clubPhotoFor } from "./clubPhotos";
+import { clubIconFor } from "./clubIcons";
 
 export const CLUBS: Club[] = [
   {
@@ -13,7 +13,7 @@ export const CLUBS: Club[] = [
     condition: "Very Good",
     price: 189,
     originalPrice: 549,
-    photos: [clubPhotoFor("Driver")],
+    photos: [clubIconFor("Driver")],
     specs: {
       headSize: "460cc",
       adjustable: true,
@@ -40,7 +40,7 @@ export const CLUBS: Club[] = [
     condition: "Excellent",
     price: 449,
     originalPrice: 1299,
-    photos: [clubPhotoFor("Iron Set")],
+    photos: [clubIconFor("Iron Set")],
     specs: {
       headSize: "N/A",
       adjustable: false,
@@ -67,7 +67,7 @@ export const CLUBS: Club[] = [
     condition: "Good",
     price: 89,
     originalPrice: 179,
-    photos: [clubPhotoFor("Wedge")],
+    photos: [clubIconFor("Wedge")],
     specs: {
       headSize: "N/A",
       adjustable: false,
@@ -94,7 +94,7 @@ export const CLUBS: Club[] = [
     condition: "Like New",
     price: 159,
     originalPrice: 349,
-    photos: [clubPhotoFor("Fairway Wood")],
+    photos: [clubIconFor("Fairway Wood")],
     specs: {
       headSize: "210cc",
       adjustable: true,
@@ -121,7 +121,7 @@ export const CLUBS: Club[] = [
     condition: "Very Good",
     price: 249,
     originalPrice: 449,
-    photos: [clubPhotoFor("Putter")],
+    photos: [clubIconFor("Putter")],
     specs: {
       headSize: "Mallet",
       adjustable: false,
@@ -148,7 +148,7 @@ export const CLUBS: Club[] = [
     condition: "Good",
     price: 69,
     originalPrice: 199,
-    photos: [clubPhotoFor("Hybrid")],
+    photos: [clubIconFor("Hybrid")],
     specs: {
       headSize: "N/A",
       adjustable: false,
