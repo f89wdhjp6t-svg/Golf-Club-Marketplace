@@ -3,12 +3,7 @@
 import { useRef, useState } from "react";
 import type { Club, SellForm, ValuationResult } from "@/lib/types";
 import { CLUB_TYPES, CONDITIONS, conditionBadgeBg, conditionColor } from "@/lib/clubs";
-
-const FALLBACK_PHOTOS = [
-  "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=800&q=85&fit=crop",
-  "https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?w=800&q=85&fit=crop",
-  "https://images.unsplash.com/photo-1592919505780-303950717480?w=800&q=85&fit=crop",
-];
+import { clubIconFor } from "@/lib/clubIcons";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -917,7 +912,7 @@ export function SellView({ onListingCreated }: { onListingCreated: (club: Club) 
                 condition: form.condition,
                 price: finalPrice,
                 originalPrice: aiData.originalMSRP,
-                photos: photoPreviews.length > 0 ? [...photoPreviews, FALLBACK_PHOTOS[0]] : FALLBACK_PHOTOS,
+                photos: photoPreviews.length > 0 ? photoPreviews : [clubIconFor(form.type)],
                 specs: aiData.specs,
                 seller: "You",
                 rating: 5.0,

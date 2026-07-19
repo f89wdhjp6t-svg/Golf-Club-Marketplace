@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <defs>
+    <radialGradient id="bg" cx="35%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#bg)"/>
+  <circle cx="330" cy="45" r="9" fill="#eab308"/>
+  <g>
+    <line x1="245" y1="105" x2="330" y2="20" stroke="#0f1f0f" stroke-width="9" stroke-linecap="round"/>
+    <ellipse cx="190" cy="140" rx="72" ry="50" fill="#0f1f0f"/>
+    <ellipse cx="168" cy="122" rx="40" ry="20" fill="#16a34a" opacity="0.55"/>
+    <ellipse cx="190" cy="140" rx="72" ry="50" fill="none" stroke="#16a34a" stroke-width="3" opacity="0.4"/>
+  </g>
+  <text x="200" y="248" text-anchor="middle" font-family="Georgia, serif" font-size="26" font-weight="700" fill="#0f1f0f">FAIRWAY WOOD</text>
+  <text x="200" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" letter-spacing="2" fill="#6b7280">CLUB ILLUSTRATION</text>
+</svg>
