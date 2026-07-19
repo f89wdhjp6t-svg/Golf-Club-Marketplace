@@ -2,14 +2,18 @@
 
 import { useRef, useState } from "react";
 import { CLUBS, conditionBadgeBg, conditionColor } from "@/lib/clubs";
-import type { AIResult, Club } from "@/lib/types";
+import { NEW_CLUBS } from "@/lib/newClubs";
+import type { AIResult, Club, NewClub } from "@/lib/types";
 import { ClubCard } from "@/components/ClubCard";
+import { NewClubCard } from "@/components/NewClubCard";
+import { PriceComparison } from "@/components/PriceComparison";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { AIResultBody } from "@/components/AIResultBody";
 import { StarRating, SpecRow } from "@/components/Shared";
 import { SellView } from "@/components/SellView";
 
-type View = "listing" | "detail" | "sell";
+type View = "listing" | "detail" | "newDetail" | "sell";
+type BuyTab = "used" | "new";
 type InputMode = "text" | "photo";
 
 const TYPES = ["All", "Driver", "Iron Set", "Wedge", "Fairway Wood", "Hybrid", "Putter"];
@@ -22,6 +26,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("All");
   const [view, setView] = useState<View>("listing");
+  const [buyTab, setBuyTab] = useState<BuyTab>("used");
+  const [selectedNewClub, setSelectedNewClub] = useState<NewClub | null>(null);
   const [cartItems, setCartItems] = useState<Club[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [myClubPhoto, setMyClubPhoto] = useState<{ data: string; mediaType: string } | null>(null);
@@ -41,6 +47,12 @@ export default function App() {
     setMyClubPhoto(null);
     setMyClubPhotoPreview(null);
     setView("detail");
+    window.scrollTo(0, 0);
+  };
+
+  const handleSelectNewClub = (club: NewClub) => {
+    setSelectedNewClub(club);
+    setView("newDetail");
     window.scrollTo(0, 0);
   };
 
@@ -277,34 +289,82 @@ export default function App() {
                 </button>
               </div>
             </div>
-            <div style={{ display: "flex", gap: 8, marginBottom: 22, flexWrap: "wrap" }}>
-              {TYPES.map((t) => (
+
+            {/* Used / New sub-tabs */}
+            <div style={{ display: "flex", gap: 4, background: "#e5e7eb", borderRadius: 14, padding: 4, marginBottom: 22, maxWidth: 340 }}>
+              {(
+                [
+                  ["used", "♻️ Used Clubs"],
+                  ["new", "✨ New Clubs"],
+                ] as const
+              ).map(([tab, label]) => (
                 <button
-                  key={t}
-                  onClick={() => setFilter(t)}
+                  key={tab}
+                  onClick={() => setBuyTab(tab)}
                   style={{
-                    background: filter === t ? "#16a34a" : "#fff",
-                    color: filter === t ? "#fff" : "#374151",
-                    border: filter === t ? "1.5px solid #16a34a" : "1.5px solid #e5e7eb",
-                    borderRadius: 20,
-                    padding: "7px 18px",
+                    flex: 1,
+                    padding: "10px 8px",
+                    borderRadius: 10,
+                    background: buyTab === tab ? "#fff" : "transparent",
+                    border: "none",
+                    fontWeight: 700,
                     fontSize: 13,
-                    fontWeight: 600,
                     cursor: "pointer",
+                    color: buyTab === tab ? "#111" : "#6b7280",
+                    boxShadow: buyTab === tab ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+                    transition: "all 0.15s",
                   }}
                 >
-                  {t}
+                  {label}
                 </button>
               ))}
             </div>
-            <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 16, fontWeight: 500 }}>
-              {filtered.length} clubs available{filter !== "All" ? ` in ${filter}` : ""}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
-              {filtered.map((c) => (
-                <ClubCard key={c.id} club={c} onSelect={handleSelectClub} />
-              ))}
-            </div>
+
+            {buyTab === "used" && (
+              <>
+                <div style={{ display: "flex", gap: 8, marginBottom: 22, flexWrap: "wrap" }}>
+                  {TYPES.map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setFilter(t)}
+                      style={{
+                        background: filter === t ? "#16a34a" : "#fff",
+                        color: filter === t ? "#fff" : "#374151",
+                        border: filter === t ? "1.5px solid #16a34a" : "1.5px solid #e5e7eb",
+                        borderRadius: 20,
+                        padding: "7px 18px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 16, fontWeight: 500 }}>
+                  {filtered.length} used clubs available{filter !== "All" ? ` in ${filter}` : ""}
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
+                  {filtered.map((c) => (
+                    <ClubCard key={c.id} club={c} onSelect={handleSelectClub} />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {buyTab === "new" && (
+              <>
+                <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 16, fontWeight: 500 }}>
+                  {NEW_CLUBS.length} new clubs · compare prices across retailers
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
+                  {NEW_CLUBS.map((c) => (
+                    <NewClubCard key={c.id} club={c} onSelect={handleSelectNewClub} />
+                  ))}
+                </div>
+              </>
+            )}
           </>
         )}
 
@@ -626,6 +686,71 @@ export default function App() {
                     <p style={{ color: "#ef4444", fontSize: 13, margin: 0 }}>{activeResult.error}</p>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {view === "newDetail" && selectedNewClub && (
+          <div>
+            <button
+              onClick={() => setView("listing")}
+              style={{ background: "none", border: "none", color: "#16a34a", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 20, padding: 0 }}
+            >
+              ← Back to listings
+            </button>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                <div style={{ background: "#fff", borderRadius: 18, overflow: "hidden", border: "1.5px solid #e5e7eb", padding: 16 }}>
+                  <PhotoGallery photos={selectedNewClub.photos} name={selectedNewClub.name} />
+                </div>
+                <div style={{ background: "#fff", borderRadius: 18, padding: 22, border: "1.5px solid #e5e7eb" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#16a34a", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6 }}>
+                    {selectedNewClub.brand} · {selectedNewClub.type} · {selectedNewClub.year}
+                  </div>
+                  <h1 style={{ fontFamily: "'Georgia', serif", fontSize: 22, fontWeight: 700, margin: "0 0 8px", lineHeight: 1.3 }}>
+                    {selectedNewClub.name}
+                  </h1>
+                  <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 14px", lineHeight: 1.6 }}>{selectedNewClub.description}</p>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      background: "#eff6ff",
+                      color: "#1d4ed8",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      borderRadius: 20,
+                      padding: "4px 14px",
+                      marginBottom: 14,
+                      border: "1.5px solid #93c5fd",
+                    }}
+                  >
+                    Brand New
+                  </span>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 4 }}>
+                    <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 700, textTransform: "uppercase" }}>MSRP</span>
+                    <span style={{ fontSize: 32, fontWeight: 900, color: "#111" }}>${selectedNewClub.msrp}</span>
+                  </div>
+                  <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>
+                    See the price comparison panel to find the best current price →
+                  </p>
+                </div>
+                <div style={{ background: "#fff", borderRadius: 18, padding: 22, border: "1.5px solid #e5e7eb" }}>
+                  <h2 style={{ fontFamily: "'Georgia', serif", fontSize: 16, fontWeight: 700, margin: "0 0 14px" }}>Full Specifications</h2>
+                  <SpecRow label="Type" value={selectedNewClub.type} />
+                  <SpecRow label="Loft" value={selectedNewClub.loft} />
+                  <SpecRow label="Shaft" value={selectedNewClub.shaft} />
+                  <SpecRow label="Head Size" value={selectedNewClub.specs.headSize} />
+                  <SpecRow label="Adjustable" value={selectedNewClub.specs.adjustable ? "Yes" : "No"} />
+                  <SpecRow label="Forgiveness" value={selectedNewClub.specs.forgiveness} />
+                  <SpecRow label="Distance" value={selectedNewClub.specs.distance} />
+                  <SpecRow label="Spin" value={selectedNewClub.specs.spin} />
+                  <SpecRow label="Face Material" value={selectedNewClub.specs.material} />
+                </div>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                <PriceComparison club={selectedNewClub} />
               </div>
             </div>
           </div>

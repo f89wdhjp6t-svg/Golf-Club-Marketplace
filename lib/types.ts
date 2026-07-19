@@ -82,3 +82,33 @@ export interface SellForm {
   condition: Condition;
   extraNotes: string;
 }
+
+export interface NewClub {
+  id: number;
+  name: string;
+  brand: string;
+  type: string;
+  year: number;
+  loft: string;
+  shaft: string;
+  msrp: number;
+  photos: string[];
+  specs: ClubSpecs;
+  description: string;
+}
+
+export interface Retailer {
+  name: string;
+  domain: string;
+}
+
+export interface StorePriceEstimate {
+  store: string;
+  estimatedPrice: number;
+  note: string;
+}
+
+export interface StorePricesResult {
+  estimates: StorePriceEstimate[];
+  error?: string;
+}
