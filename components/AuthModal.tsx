@@ -2,17 +2,8 @@
 
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  border: "1.5px solid #e5e7eb",
-  borderRadius: 10,
-  padding: "11px 14px",
-  fontSize: 14,
-  outline: "none",
-  boxSizing: "border-box",
-  color: "#111",
-};
+import { theme } from "@/lib/theme";
+import { inputStyle } from "./Shared";
 
 export function AuthModal({ onClose }: { onClose: () => void }) {
   const { signUp, signIn, configured } = useAuth();
@@ -47,7 +38,7 @@ export function AuthModal({ onClose }: { onClose: () => void }) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(15,31,15,0.5)",
+        background: "rgba(58,46,42,0.5)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -61,24 +52,24 @@ export function AuthModal({ onClose }: { onClose: () => void }) {
       >
         {!configured ? (
           <>
-            <h2 style={{ fontFamily: "'Georgia', serif", fontSize: 20, fontWeight: 700, margin: "0 0 10px" }}>
+            <h2 style={{ fontFamily: theme.serif, fontSize: 20, fontWeight: 700, margin: "0 0 10px" }}>
               Accounts aren't set up yet
             </h2>
-            <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, margin: "0 0 20px" }}>
+            <p style={{ fontSize: 13, color: theme.sub, lineHeight: 1.6, margin: "0 0 20px" }}>
               This deployment doesn't have Supabase configured, so sign-up/login isn't available.
-              Add <code>NEXT_PUBLIC_SUPABASE_URL</code> and <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> to enable accounts.
+              Add <code>NEXT_PUBLIC_SUPABASE_URL</code> and <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> to enable accounts, the tracker, and the shared calendar.
             </p>
-            <button onClick={onClose} style={{ width: "100%", background: "#0f1f0f", color: "#fff", border: "none", borderRadius: 10, padding: 12, fontWeight: 700, cursor: "pointer" }}>
+            <button onClick={onClose} style={{ width: "100%", background: theme.ink, color: "#fff", border: "none", borderRadius: 10, padding: 12, fontWeight: 700, cursor: "pointer" }}>
               Close
             </button>
           </>
         ) : signedUp ? (
           <>
             <div style={{ fontSize: 32, marginBottom: 12 }}>✅</div>
-            <h2 style={{ fontFamily: "'Georgia', serif", fontSize: 20, fontWeight: 700, margin: "0 0 10px" }}>
+            <h2 style={{ fontFamily: theme.serif, fontSize: 20, fontWeight: 700, margin: "0 0 10px" }}>
               Check your email
             </h2>
-            <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, margin: "0 0 20px" }}>
+            <p style={{ fontSize: 13, color: theme.sub, lineHeight: 1.6, margin: "0 0 20px" }}>
               We sent a confirmation link to <strong>{email}</strong>. Confirm it, then sign in.
             </p>
             <button
@@ -86,19 +77,21 @@ export function AuthModal({ onClose }: { onClose: () => void }) {
                 setSignedUp(false);
                 setMode("signin");
               }}
-              style={{ width: "100%", background: "#16a34a", color: "#fff", border: "none", borderRadius: 10, padding: 12, fontWeight: 700, cursor: "pointer" }}
+              style={{ width: "100%", background: theme.primary, color: "#fff", border: "none", borderRadius: 10, padding: 12, fontWeight: 700, cursor: "pointer" }}
             >
               Go to Sign In
             </button>
           </>
         ) : (
           <>
-            <div style={{ display: "flex", gap: 10, marginBottom: 22 }}>
-              <span style={{ fontSize: 26 }}>⛳</span>
-              <span style={{ fontFamily: "'Georgia', serif", fontWeight: 700, fontSize: 20, color: "#0f1f0f" }}>FairwayFind</span>
+            <div style={{ display: "flex", gap: 10, marginBottom: 22, alignItems: "center" }}>
+              <span style={{ fontSize: 26 }}>🤰</span>
+              <span style={{ fontFamily: theme.serif, fontWeight: 700, fontSize: 18, color: theme.ink, lineHeight: 1.2 }}>
+                The Ultimate Baby Guide
+              </span>
             </div>
 
-            <div style={{ display: "flex", background: "#f3f4f6", borderRadius: 12, padding: 4, marginBottom: 20, gap: 4 }}>
+            <div style={{ display: "flex", background: "#f6efe9", borderRadius: 12, padding: 4, marginBottom: 20, gap: 4 }}>
               {(["signin", "signup"] as const).map((m) => (
                 <button
                   key={m}
@@ -111,11 +104,11 @@ export function AuthModal({ onClose }: { onClose: () => void }) {
                     padding: "9px 4px",
                     borderRadius: 9,
                     background: mode === m ? "#fff" : "transparent",
-                    border: mode === m ? "1.5px solid #e5e7eb" : "1.5px solid transparent",
+                    border: mode === m ? `1.5px solid ${theme.border}` : "1.5px solid transparent",
                     fontWeight: 700,
                     fontSize: 13,
                     cursor: "pointer",
-                    color: mode === m ? "#111" : "#6b7280",
+                    color: mode === m ? theme.ink : theme.sub,
                   }}
                 >
                   {m === "signin" ? "Sign In" : "Sign Up"}
@@ -136,14 +129,14 @@ export function AuthModal({ onClose }: { onClose: () => void }) {
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               />
-              {error && <p style={{ fontSize: 12, color: "#ef4444", margin: 0 }}>{error}</p>}
+              {error && <p style={{ fontSize: 12, color: "#a3313a", margin: 0 }}>{error}</p>}
               <button
                 onClick={handleSubmit}
                 disabled={loading || !email || !password || (mode === "signup" && !name)}
                 style={{
                   width: "100%",
-                  background: loading || !email || !password ? "#e5e7eb" : "#16a34a",
-                  color: loading || !email || !password ? "#9ca3af" : "#fff",
+                  background: loading || !email || !password ? "#e5dcd6" : theme.primary,
+                  color: loading || !email || !password ? "#a89890" : "#fff",
                   border: "none",
                   borderRadius: 10,
                   padding: 13,

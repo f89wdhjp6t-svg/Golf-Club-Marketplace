@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { FamilyProvider } from "@/lib/family-context";
+import { Nav } from "@/components/Nav";
+import { theme } from "@/lib/theme";
 
 export const metadata: Metadata = {
-  title: "FairwayFind — Golf Club Marketplace",
+  title: "The Ultimate Baby Guide — Pre & Post Baby",
   description:
-    "Buy and sell used golf clubs with AI-powered valuation, photo scanning, and buy verdicts.",
+    "A pregnancy and newborn guide: what to expect, what's normal, food and medication safety, labor and postpartum, balanced vaccine information, a baby tracker, and a shared family calendar.",
 };
 
 export default function RootLayout({
@@ -15,8 +18,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <AuthProvider>{children}</AuthProvider>
+      <body style={{ background: theme.bg }}>
+        <AuthProvider>
+          <FamilyProvider>
+            <Nav />
+            {children}
+          </FamilyProvider>
+        </AuthProvider>
       </body>
     </html>
   );

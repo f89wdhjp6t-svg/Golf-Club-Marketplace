@@ -1,114 +1,48 @@
-export type Condition = "Like New" | "Excellent" | "Very Good" | "Good" | "Fair";
-
-export interface ClubSpecs {
-  headSize: string;
-  adjustable: boolean;
-  forgiveness: string;
-  distance: string;
-  spin: string;
-  material: string;
+export interface Family {
+  id: string;
+  name: string;
+  inviteCode: string;
 }
 
-export interface Club {
+export interface FamilyMember {
+  userId: string;
+  displayName: string;
+  role: string;
+}
+
+export interface Baby {
+  id: string;
+  familyId: string;
+  name: string;
+  birthDate: string | null;
+  dueDate: string | null;
+}
+
+export type TrackerType = "feeding" | "diaper" | "sleep";
+
+export interface TrackerEntry {
   id: number;
-  name: string;
-  type: string;
-  brand: string;
-  year: number;
-  loft: string;
-  shaft: string;
-  condition: Condition;
-  price: number;
-  originalPrice: number;
-  photos: string[];
-  specs: ClubSpecs;
-  seller: string;
-  rating: number;
-  reviews: number;
-  daysListed: number;
-  description: string;
+  babyId: string;
+  familyId: string;
+  type: TrackerType;
+  subtype: string | null;
+  startedAt: string;
+  endedAt: string | null;
+  amount: string | null;
+  notes: string | null;
+  loggedBy: string | null;
+  loggedByName: string | null;
 }
 
-export interface AIResult {
-  identifiedClub?: string;
-  confidence?: "High" | "Medium" | "Low";
-  conditionNote?: string;
-  verdict: string;
-  verdictColor: string;
-  valueScore: number;
-  upgradeScore: number;
-  summary: string;
-  prosForBuyer: string[];
-  consForBuyer: string[];
-  comparisonInsight: string;
-  buyRecommendation: string;
-  error?: string;
-}
-
-export interface ValuationSpecs {
-  headSize: string;
-  loft: string;
-  shaft: string;
-  flex: string;
-  adjustable: boolean;
-  forgiveness: string;
-  distance: string;
-  spin: string;
-  material: string;
-}
-
-export interface ValuationResult {
-  priceLow: number;
-  priceHigh: number;
-  priceSuggested: number;
-  originalMSRP: number;
-  marketDemand: "High" | "Medium" | "Low";
-  demandColor: string;
-  pricingRationale: string;
-  sellingTips: string[];
-  specs: ValuationSpecs;
-  generatedTitle: string;
-  generatedDescription: string;
-  error?: string;
-}
-
-export interface SellForm {
-  clubName: string;
-  brand: string;
-  type: string;
-  year: string;
-  loft: string;
-  shaft: string;
-  condition: Condition;
-  extraNotes: string;
-}
-
-export interface NewClub {
+export interface CalendarEvent {
   id: number;
-  name: string;
-  brand: string;
-  type: string;
-  year: number;
-  loft: string;
-  shaft: string;
-  msrp: number;
-  photos: string[];
-  specs: ClubSpecs;
-  description: string;
-}
-
-export interface Retailer {
-  name: string;
-  domain: string;
-}
-
-export interface StorePriceEstimate {
-  store: string;
-  estimatedPrice: number;
-  note: string;
-}
-
-export interface StorePricesResult {
-  estimates: StorePriceEstimate[];
-  error?: string;
+  familyId: string;
+  title: string;
+  category: string;
+  startAt: string;
+  endAt: string | null;
+  notes: string | null;
+  assignedTo: string | null;
+  assignedToName: string | null;
+  createdBy: string | null;
 }

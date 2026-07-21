@@ -1,28 +1,42 @@
-# FairwayFind
+# The Ultimate Baby Guide (Pre & Post Baby)
 
-A golf club marketplace: browse and buy used clubs, get an AI-powered buy
-verdict (by typing your current club or scanning a photo of it), and list
-your own clubs for sale with an AI-generated valuation and spec sheet.
+A pregnancy and newborn guide for parents: what to expect week by week, what's
+normal to feel, what's safe to eat or take, what labor and postpartum
+recovery look like, and a balanced look at vaccines from both sides — plus a
+baby tracker and a shared family calendar that both parents can use from
+their own phones.
 
 Built with Next.js (App Router) + TypeScript.
 
 ## Features
 
-- **Buy** — browse listings, filter by club type, view full specs and
-  photos, add to cart.
-- **AI Club Advisor** — on any listing, either type the club you currently
-  play or upload a photo of it, and Claude compares it to the listing and
-  gives a buy verdict, value/upgrade scores, pros/cons, and a recommendation.
-- **Sell** — a 3-step flow (club details → AI valuation & pricing → preview)
-  where Claude appraises the club, suggests a price range, writes the
-  listing title/description/specs, and gives selling tips.
+- **Pregnancy guide** — trimester-by-trimester overview of what's normal to
+  feel (physically and emotionally), plus a week-by-week breakdown (weeks
+  4–40) of baby's development and common symptoms.
+- **Food & medication safety** — a searchable, filterable reference of foods
+  and common medications, flagged as generally safe, caution/limit, or avoid.
+- **Labor & birth** — signs labor is starting, the stages of labor, pain
+  management options, what a C-section involves, what happens right after
+  birth, and things worth deciding ahead of time in a birth plan.
+- **Postpartum & newborn care** — physical and emotional recovery after
+  birth, newborn basics (feeding, sleep, diapers, jaundice, and more), and
+  clear warning signs for when to call your provider or pediatrician.
+- **Vaccines: both sides** — pros and cons for following the standard
+  schedule, delaying/spacing out, or declining, common concerns addressed
+  factually, and questions worth bringing to your pediatrician. This is
+  presented neutrally to support your conversation with a doctor, not to
+  make the decision for you.
+- **Baby tracker** — log feedings, diapers, and sleep with one tap; see a
+  day-by-day timeline of who logged what and when.
+- **Shared family calendar** — appointments, childcare days, and reminders,
+  visible to both parents on separate phones via a family invite code.
 
 ## Getting started
 
 ```bash
 npm install
 cp .env.example .env
-# edit .env and set ANTHROPIC_API_KEY
+# edit .env and set your Supabase credentials
 npm run dev
 ```
 
@@ -30,18 +44,10 @@ Open http://localhost:3000.
 
 ## Configuration
 
-The AI features (buy verdict, photo scan, sell valuation, offer negotiation,
-store price comparison) are powered by the Claude API and run **server-side
-only** — set `ANTHROPIC_API_KEY` in `.env` (see `.env.example`). The key is
-never sent to the browser. If it's missing, those features return a clear
-error instead of failing silently; everything else (browsing, filtering)
-works without it.
+### Accounts, tracker, and calendar (Supabase)
 
-Optionally set `ANTHROPIC_MODEL` to override the default model.
-
-### Accounts and persistence (Supabase)
-
-Sign-up/login, selling clubs, and the cart require a Supabase project:
+Signing in, the baby tracker, and the shared calendar all require a Supabase
+project:
 
 1. Create a free project at [supabase.com](https://supabase.com)
 2. In the SQL Editor, run `supabase/schema.sql` once
@@ -50,32 +56,52 @@ Sign-up/login, selling clubs, and the cart require a Supabase project:
 5. In Authentication → Settings, you can turn off "Confirm email" for easier
    local testing (optional)
 
-Without these set, the app still runs — browsing works, and Sign In shows a
-message explaining accounts aren't configured yet instead of failing.
+Without these set, the guide content (pregnancy weeks, food/medication
+safety, labor, postpartum, vaccines) still works — only accounts, the
+tracker, and the calendar require Supabase.
+
+### How the shared family works
+
+One parent signs up and creates a family (Family → Start a new family),
+which generates a 6-character invite code. The other parent signs up on
+their own phone and joins with that code (Family → Join with a code). From
+then on, both accounts see the same babies, tracker entries, and calendar
+events — enforced by Postgres Row Level Security policies in
+`supabase/schema.sql`, not just app logic.
 
 ## Project structure
 
 ```
 app/
-  page.tsx              main client-side app (listing / detail / sell views)
-  api/
-    analyze/            POST — text-based buy verdict vs. a described club
-    analyze-photo/       POST — buy verdict from an uploaded club photo
-    valuation/            POST — sell-side AI valuation + spec generation
-components/               UI components (ClubCard, SellView, AIResultBody, ...)
+  page.tsx                  home / dashboard
+  guide/
+    page.tsx                 trimester overview + week-by-week
+    nutrition/                food & medication safety
+    birth/                    labor & delivery
+    postpartum/                postpartum & newborn care
+    vaccines/                  balanced vaccine pros/cons
+  tracker/                   baby tracker (feeding/diaper/sleep)
+  calendar/                  shared family calendar
+  family/                    create/join family, invite code, add baby
+components/                  UI components (Nav, TrackerLogger, CalendarView, ...)
 lib/
-  clubs.ts               mock listing data + condition color maps
-  types.ts                shared TypeScript types
-  anthropic.ts            server-side Claude API helper
+  content/                   static guide content (weeks, nutrition, birth, postpartum, vaccines)
+  family-data.ts              Supabase queries for family/baby/tracker/calendar
+  family-context.tsx          React context for the signed-in user's family
+  auth-context.tsx            React context for Supabase auth
+  types.ts                    shared TypeScript types
+supabase/schema.sql          tables, RLS policies, and invite-code join functions
 ```
 
 ## Notes
 
-- Listings are the static mock data (`lib/clubs.ts`) plus anything sold
-  through the Sell flow, which is persisted to Supabase and visible to
-  everyone. Cart contents persist per-account too.
-- Checkout is a UI placeholder — no payment processing is wired up. Selling
-  a club doesn't ship anything or move real money.
-- There's no in-app messaging, shipping labels, or seller reputation built
-  from real sales history yet — those still need real infrastructure beyond
-  accounts + a database.
+- All guide content (pregnancy, birth, postpartum, vaccines, food/medication
+  safety) is general educational information, not medical advice, and isn't
+  exhaustive — the app says so throughout. Always defer to your OB, midwife,
+  or pediatrician for anything specific to you or your baby.
+- The vaccines page intentionally lays out reasons for and against different
+  choices rather than pushing one answer, since it's a decision families
+  make with their own doctor.
+- There's no push-notification or offline support yet — the tracker and
+  calendar are live Supabase data, so both parents' phones need a network
+  connection to sync.

@@ -11,6 +11,7 @@ body {
 body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  color: #3a2e2a;
 }
 
 button {
@@ -23,11 +24,21 @@ textarea {
   font-family: inherit;
 }
 
+a {
+  color: inherit;
+}
+
 @keyframes spin {
   from {
     transform: rotate(0deg);
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .calendar-grid {
+    grid-template-columns: 1fr !important;
   }
 }

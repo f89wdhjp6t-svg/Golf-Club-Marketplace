@@ -1,0 +1,16 @@
+export const theme = {
+  bg: "#fff8f5",
+  card: "#ffffff",
+  border: "#f0e2da",
+  ink: "#3a2e2a",
+  sub: "#8a7a72",
+  primary: "#c8788f",
+  primaryDark: "#a85a72",
+  primarySoft: "#fbe9ee",
+  accent: "#7fa693",
+  accentSoft: "#e8f2ec",
+  warn: "#d97706",
+  warnSoft: "#fef3e2",
+  headerBg: "linear-gradient(135deg, #4a3540 0%, #6b4a5c 100%)",
+  serif: "'Georgia', serif",
+};
