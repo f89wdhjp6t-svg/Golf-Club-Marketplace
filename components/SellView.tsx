@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import type { Club, SellForm, ValuationResult } from "@/lib/types";
-import { CLUB_TYPES, CONDITIONS, conditionBadgeBg, conditionColor } from "@/lib/clubs";
+import { CLUB_TYPES, CONDITIONS, conditionBadgeBg, conditionColor, conditionDescription } from "@/lib/clubs";
 import { clubIconFor } from "@/lib/clubIcons";
 
 const inputStyle: React.CSSProperties = {
@@ -285,11 +285,7 @@ export function SellView({ onListingCreated }: { onListingCreated: (club: Club) 
               ))}
             </div>
             <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 6 }}>
-              {form.condition === "Like New" && "Never used or used once — no marks, original grip"}
-              {form.condition === "Excellent" && "Minimal signs of use, face in great shape, no dings"}
-              {form.condition === "Very Good" && "Normal play wear, some face marks, shaft in good shape"}
-              {form.condition === "Good" && "Visible wear, scuffs on sole/head, still performs well"}
-              {form.condition === "Fair" && "Heavy wear, bag chatter, may have refinished head"}
+              {conditionDescription[form.condition]}
             </div>
           </div>
 

@@ -344,6 +344,16 @@ export const conditionBadgeBg: Record<Condition, string> = {
   Fair: "#fef2f2",
 };
 
+export const conditionDescription: Record<Condition, string> = {
+  "Like New": "Never used or used once — no marks, original grip, indistinguishable from new.",
+  Excellent: "Minimal signs of use, played fewer than ~10 rounds, face in great shape, no dings.",
+  "Very Good": "Normal play wear — some face marks and light scuffs, shaft and grip still in good shape. Purely cosmetic, doesn't affect performance.",
+  Good: "Visible wear — scuffs on the sole/head, some paint fade — but fully playable and performs like new.",
+  Fair: "Heavy wear, bag chatter, possibly a refinished head. Fully functional, priced accordingly.",
+};
+
+export const CONDITION_ORDER: Condition[] = ["Like New", "Excellent", "Very Good", "Good", "Fair"];
+
 export const CLUB_TYPES = [
   "Driver",
   "Iron Set",

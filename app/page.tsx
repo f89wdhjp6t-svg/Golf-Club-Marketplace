@@ -13,8 +13,12 @@ import { AIResultBody } from "@/components/AIResultBody";
 import { StarRating, SpecRow } from "@/components/Shared";
 import { SellView } from "@/components/SellView";
 import { FilterBar } from "@/components/FilterBar";
+import { ValueGuideView } from "@/components/ValueGuideView";
+import { ConditionGuide } from "@/components/ConditionGuide";
+import { TrustBadges } from "@/components/TrustBadges";
+import { MakeOfferPanel } from "@/components/MakeOfferPanel";
 
-type View = "listing" | "detail" | "newDetail" | "sell";
+type View = "listing" | "detail" | "newDetail" | "sell" | "valueGuide";
 type BuyTab = "used" | "new";
 type InputMode = "text" | "photo";
 
@@ -46,6 +50,7 @@ export default function App() {
   const [view, setView] = useState<View>("listing");
   const [buyTab, setBuyTab] = useState<BuyTab>("used");
   const [selectedNewClub, setSelectedNewClub] = useState<NewClub | null>(null);
+  const [tradeInClubId, setTradeInClubId] = useState<number | "">("");
   const [cartItems, setCartItems] = useState<Club[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [myClubPhoto, setMyClubPhoto] = useState<{ data: string; mediaType: string } | null>(null);
@@ -122,6 +127,7 @@ export default function App() {
 
   const handleSelectNewClub = (club: NewClub) => {
     setSelectedNewClub(club);
+    setTradeInClubId("");
     setView("newDetail");
     window.scrollTo(0, 0);
   };
@@ -187,11 +193,16 @@ export default function App() {
     setLoading(false);
   };
 
-  const addToCart = (club: Club) => {
-    if (!cartItems.find((c) => c.id === club.id)) setCartItems([...cartItems, club]);
+  const addToCart = (club: Club, priceOverride?: number) => {
+    if (cartItems.find((c) => c.id === club.id)) return;
+    const item = priceOverride ? { ...club, price: priceOverride } : club;
+    setCartItems([...cartItems, item]);
   };
   const inCart = selectedClub && cartItems.find((c) => c.id === selectedClub.id);
   const totalCart = cartItems.reduce((a, c) => a + c.price, 0);
+  const myListings = allClubs.filter((c) => c.seller === "You");
+  const tradeInClub = myListings.find((c) => c.id === tradeInClubId) || null;
+  const tradeInCredit = tradeInClub ? Math.round(tradeInClub.price * 0.8) : 0;
   const activeResult = inputMode === "photo" ? photoResult : aiResult;
   const activeLoading = inputMode === "photo" ? photoLoading : loading;
 
@@ -241,6 +252,7 @@ export default function App() {
           <div style={{ display: "flex", gap: 6, marginLeft: 8 }}>
             {navBtn("🛍️ Buy", "listing")}
             {navBtn("💰 Sell", "sell")}
+            {navBtn("💲 Value Guide", "valueGuide")}
           </div>
         </div>
         <button
@@ -309,10 +321,11 @@ export default function App() {
                 <span style={{ color: "#16a34a" }}>${totalCart}</span>
               </div>
               <button
-                style={{ width: "100%", background: "#16a34a", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}
+                style={{ width: "100%", background: "#16a34a", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 700, fontSize: 15, cursor: "pointer", marginBottom: 14 }}
               >
                 Checkout →
               </button>
+              <TrustBadges compact />
             </>
           )}
         </div>
@@ -329,6 +342,8 @@ export default function App() {
             }}
           />
         )}
+
+        {view === "valueGuide" && <ValueGuideView onGoToSell={() => setView("sell")} />}
 
         {view === "listing" && (
           <>
@@ -525,7 +540,7 @@ export default function App() {
                     {selectedClub.name}
                   </h1>
                   <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 14px", lineHeight: 1.6 }}>{selectedClub.description}</p>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
                     <span
                       style={{
                         background: conditionBadgeBg[selectedClub.condition],
@@ -539,6 +554,7 @@ export default function App() {
                     >
                       {selectedClub.condition}
                     </span>
+                    <ConditionGuide highlight={selectedClub.condition} />
                   </div>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 10 }}>
                     <span style={{ fontSize: 32, fontWeight: 900, color: "#16a34a" }}>${selectedClub.price}</span>
@@ -565,10 +581,20 @@ export default function App() {
                       fontWeight: 700,
                       fontSize: 15,
                       cursor: "pointer",
+                      marginBottom: 12,
                     }}
                   >
                     {inCart ? "✓ Added to Cart" : `Add to Cart — $${selectedClub.price}`}
                   </button>
+                  {!inCart && (
+                    <div style={{ marginBottom: 16 }}>
+                      <MakeOfferPanel
+                        club={selectedClub}
+                        onOfferAccepted={(finalPrice) => addToCart(selectedClub, finalPrice)}
+                      />
+                    </div>
+                  )}
+                  <TrustBadges compact />
                 </div>
                 <div style={{ background: "#fff", borderRadius: 18, padding: 22, border: "1.5px solid #e5e7eb" }}>
                   <h2 style={{ fontFamily: "'Georgia', serif", fontSize: 16, fontWeight: 700, margin: "0 0 14px" }}>Full Specifications</h2>
@@ -865,11 +891,66 @@ export default function App() {
                   </span>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 4 }}>
                     <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 700, textTransform: "uppercase" }}>MSRP</span>
-                    <span style={{ fontSize: 32, fontWeight: 900, color: "#111" }}>${selectedNewClub.msrp}</span>
+                    <span
+                      style={{
+                        fontSize: 32,
+                        fontWeight: 900,
+                        color: "#111",
+                        textDecoration: tradeInClub ? "line-through" : "none",
+                        opacity: tradeInClub ? 0.5 : 1,
+                      }}
+                    >
+                      ${selectedNewClub.msrp}
+                    </span>
+                    {tradeInClub && (
+                      <span style={{ fontSize: 28, fontWeight: 900, color: "#16a34a" }}>
+                        ${selectedNewClub.msrp - tradeInCredit}
+                      </span>
+                    )}
                   </div>
-                  <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>
+                  <p style={{ fontSize: 12, color: "#9ca3af", margin: "0 0 16px" }}>
                     See the price comparison panel to find the best current price →
                   </p>
+
+                  <div style={{ background: "#f8fafc", borderRadius: 12, padding: 14, border: "1px solid #f3f4f6" }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#111", marginBottom: 8 }}>
+                      🔄 Trade in a club toward this purchase
+                    </div>
+                    {myListings.length === 0 ? (
+                      <p style={{ fontSize: 12, color: "#9ca3af", margin: 0, lineHeight: 1.5 }}>
+                        List a club for sale and you can apply it as trade-in credit here.
+                      </p>
+                    ) : (
+                      <>
+                        <select
+                          value={tradeInClubId}
+                          onChange={(e) => setTradeInClubId(e.target.value ? Number(e.target.value) : "")}
+                          style={{
+                            width: "100%",
+                            border: "1.5px solid #e5e7eb",
+                            borderRadius: 10,
+                            padding: "9px 12px",
+                            fontSize: 13,
+                            color: "#111",
+                            marginBottom: tradeInClub ? 8 : 0,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <option value="">Select one of your listed clubs...</option>
+                          {myListings.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name} (listed ${c.price})
+                            </option>
+                          ))}
+                        </select>
+                        {tradeInClub && (
+                          <p style={{ fontSize: 12, color: "#16a34a", margin: 0, fontWeight: 600 }}>
+                            ✓ ${tradeInCredit} trade-in credit applied (80% of listed price)
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div style={{ background: "#fff", borderRadius: 18, padding: 22, border: "1.5px solid #e5e7eb" }}>
                   <h2 style={{ fontFamily: "'Georgia', serif", fontSize: 16, fontWeight: 700, margin: "0 0 14px" }}>Full Specifications</h2>
