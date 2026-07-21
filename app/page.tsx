@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CLUBS, CONDITIONS, conditionBadgeBg, conditionColor } from "@/lib/clubs";
 import { NEW_CLUBS } from "@/lib/newClubs";
 import { ALL_BRANDS } from "@/lib/brands";
@@ -17,6 +17,11 @@ import { ValueGuideView } from "@/components/ValueGuideView";
 import { ConditionGuide } from "@/components/ConditionGuide";
 import { TrustBadges } from "@/components/TrustBadges";
 import { MakeOfferPanel } from "@/components/MakeOfferPanel";
+import { AuthModal } from "@/components/AuthModal";
+import { useAuth } from "@/lib/auth-context";
+import { fetchListings, createListing, fetchCart, addCartItem } from "@/lib/marketplace-data";
+
+const LISTING_ID_FLOOR = 10000;
 
 type View = "listing" | "detail" | "newDetail" | "sell" | "valueGuide";
 type BuyTab = "used" | "new";
@@ -31,6 +36,9 @@ const SORT_OPTIONS = [
 ];
 
 export default function App() {
+  const { user, displayName, signOut } = useAuth();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const listingsFetchedRef = useRef(false);
   const [allClubs, setAllClubs] = useState<Club[]>(CLUBS);
   const [selectedClub, setSelectedClub] = useState<Club | null>(null);
   const [myClubInput, setMyClubInput] = useState("");
@@ -59,6 +67,32 @@ export default function App() {
   const [photoResult, setPhotoResult] = useState<AIResult | null>(null);
   const [inputMode, setInputMode] = useState<InputMode>("text");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (listingsFetchedRef.current) return;
+    listingsFetchedRef.current = true;
+    fetchListings().then((dbListings) => {
+      if (dbListings.length) setAllClubs((prev) => [...dbListings, ...prev]);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setCartItems([]);
+      return;
+    }
+    fetchCart(user.id).then((entries) => {
+      const resolved = entries
+        .map((e) => {
+          const base = allClubs.find((c) => c.id === e.clubId);
+          if (!base) return null;
+          return { ...base, price: e.price };
+        })
+        .filter((c): c is Club => c !== null);
+      setCartItems(resolved);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, allClubs.length]);
 
   const usedBrands = ALL_BRANDS;
   const newBrands = ALL_BRANDS;
@@ -195,12 +229,18 @@ export default function App() {
 
   const addToCart = (club: Club, priceOverride?: number) => {
     if (cartItems.find((c) => c.id === club.id)) return;
-    const item = priceOverride ? { ...club, price: priceOverride } : club;
-    setCartItems([...cartItems, item]);
+    if (!user) {
+      setAuthModalOpen(true);
+      return;
+    }
+    const finalPrice = priceOverride ?? club.price;
+    const source = club.id >= LISTING_ID_FLOOR ? "listing" : "seed";
+    addCartItem(user.id, club.id, source, finalPrice);
+    setCartItems([...cartItems, { ...club, price: finalPrice }]);
   };
   const inCart = selectedClub && cartItems.find((c) => c.id === selectedClub.id);
   const totalCart = cartItems.reduce((a, c) => a + c.price, 0);
-  const myListings = allClubs.filter((c) => c.seller === "You");
+  const myListings = user ? allClubs.filter((c) => c.seller === displayName) : [];
   const tradeInClub = myListings.find((c) => c.id === tradeInClubId) || null;
   const tradeInCredit = tradeInClub ? Math.round(tradeInClub.price * 0.8) : 0;
   const activeResult = inputMode === "photo" ? photoResult : aiResult;
@@ -255,22 +295,44 @@ export default function App() {
             {navBtn("💲 Value Guide", "valueGuide")}
           </div>
         </div>
-        <button
-          onClick={() => setCartOpen(!cartOpen)}
-          style={{
-            background: cartItems.length ? "#16a34a" : "transparent",
-            border: "1.5px solid #16a34a",
-            borderRadius: 20,
-            padding: "6px 18px",
-            color: cartItems.length ? "#fff" : "#16a34a",
-            fontWeight: 700,
-            fontSize: 13,
-            cursor: "pointer",
-          }}
-        >
-          🛒 {cartItems.length > 0 ? `${cartItems.length} · $${totalCart}` : "Cart"}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {user ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ color: "#86efac", fontSize: 13, fontWeight: 600 }}>👤 {displayName ?? user.email}</span>
+              <button
+                onClick={() => signOut()}
+                style={{ background: "none", border: "1.5px solid rgba(255,255,255,0.25)", borderRadius: 20, padding: "5px 14px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setAuthModalOpen(true)}
+              style={{ background: "none", border: "1.5px solid rgba(255,255,255,0.25)", borderRadius: 20, padding: "6px 16px", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+            >
+              Sign In
+            </button>
+          )}
+          <button
+            onClick={() => setCartOpen(!cartOpen)}
+            style={{
+              background: cartItems.length ? "#16a34a" : "transparent",
+              border: "1.5px solid #16a34a",
+              borderRadius: 20,
+              padding: "6px 18px",
+              color: cartItems.length ? "#fff" : "#16a34a",
+              fontWeight: 700,
+              fontSize: 13,
+              cursor: "pointer",
+            }}
+          >
+            🛒 {cartItems.length > 0 ? `${cartItems.length} · $${totalCart}` : "Cart"}
+          </button>
+        </div>
       </header>
+
+      {authModalOpen && <AuthModal onClose={() => setAuthModalOpen(false)} />}
 
       {cartOpen && (
         <div
@@ -332,10 +394,42 @@ export default function App() {
       )}
 
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "28px 16px" }}>
-        {view === "sell" && (
+        {view === "sell" && !user && (
+          <div style={{ maxWidth: 480, margin: "60px auto", textAlign: "center", background: "#fff", borderRadius: 20, padding: 40, border: "1.5px solid #e5e7eb" }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>🔒</div>
+            <h2 style={{ fontFamily: "'Georgia', serif", fontSize: 20, fontWeight: 700, margin: "0 0 8px" }}>
+              Sign in to sell your clubs
+            </h2>
+            <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 20px" }}>
+              Listings are tied to your account so buyers know who they're buying from.
+            </p>
+            <button
+              onClick={() => setAuthModalOpen(true)}
+              style={{ background: "#16a34a", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
+            >
+              Sign In / Sign Up
+            </button>
+          </div>
+        )}
+
+        {view === "sell" && user && (
           <SellView
-            onListingCreated={(newListing) => {
-              setAllClubs((prev) => [newListing, ...prev]);
+            onListingCreated={async (newListing) => {
+              const created = await createListing(user.id, {
+                name: newListing.name,
+                type: newListing.type,
+                brand: newListing.brand,
+                year: newListing.year,
+                loft: newListing.loft,
+                shaft: newListing.shaft,
+                condition: newListing.condition,
+                price: newListing.price,
+                originalPrice: newListing.originalPrice,
+                photos: newListing.photos,
+                specs: newListing.specs,
+                description: newListing.description,
+              });
+              setAllClubs((prev) => [created ?? newListing, ...prev]);
               setView("listing");
               setBuyTab("used");
               resetUsedFilters();

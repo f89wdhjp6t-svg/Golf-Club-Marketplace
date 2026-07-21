@@ -30,13 +30,28 @@ Open http://localhost:3000.
 
 ## Configuration
 
-The AI features (buy verdict, photo scan, sell valuation) are powered by
-the Claude API and run **server-side only** — set `ANTHROPIC_API_KEY` in
-`.env` (see `.env.example`). The key is never sent to the browser. If it's
-missing, those features return a clear error instead of failing silently;
-everything else (browsing, filtering, cart) works without it.
+The AI features (buy verdict, photo scan, sell valuation, offer negotiation,
+store price comparison) are powered by the Claude API and run **server-side
+only** — set `ANTHROPIC_API_KEY` in `.env` (see `.env.example`). The key is
+never sent to the browser. If it's missing, those features return a clear
+error instead of failing silently; everything else (browsing, filtering)
+works without it.
 
 Optionally set `ANTHROPIC_MODEL` to override the default model.
+
+### Accounts and persistence (Supabase)
+
+Sign-up/login, selling clubs, and the cart require a Supabase project:
+
+1. Create a free project at [supabase.com](https://supabase.com)
+2. In the SQL Editor, run `supabase/schema.sql` once
+3. In Project Settings → API, copy the Project URL and `anon public` key
+4. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env`
+5. In Authentication → Settings, you can turn off "Confirm email" for easier
+   local testing (optional)
+
+Without these set, the app still runs — browsing works, and Sign In shows a
+message explaining accounts aren't configured yet instead of failing.
 
 ## Project structure
 
@@ -56,8 +71,11 @@ lib/
 
 ## Notes
 
-- Listings are in-memory mock data (`lib/clubs.ts`) plus anything you list
-  through the Sell flow during the session — there's no database yet, so
-  new listings and cart contents reset on reload. Swapping in persistence
-  (e.g. Postgres + Prisma) is the natural next step for real usage.
-- Checkout is a UI placeholder — no payment processing is wired up.
+- Listings are the static mock data (`lib/clubs.ts`) plus anything sold
+  through the Sell flow, which is persisted to Supabase and visible to
+  everyone. Cart contents persist per-account too.
+- Checkout is a UI placeholder — no payment processing is wired up. Selling
+  a club doesn't ship anything or move real money.
+- There's no in-app messaging, shipping labels, or seller reputation built
+  from real sales history yet — those still need real infrastructure beyond
+  accounts + a database.
